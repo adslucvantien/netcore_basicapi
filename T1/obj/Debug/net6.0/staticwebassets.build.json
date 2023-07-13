@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "0lJJRJ3KvbTeKmvYYvj5nc4B9P7HcPHtWTTBN+7MQys=",
+  "Source": "T1",
+  "BasePath": "_content/T1",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}
