@@ -165,10 +165,10 @@ namespace T1.Controllers
                     command.Parameters.AddWithValue("@Name", student.Name);
                     command.Parameters.AddWithValue("@Age", student.Age);
 
-                    // Get the IFormFile from the request
-                    var file = student.ImagePath; // Get the uploaded file from the student object
 
-                    // Check if a file is uploaded
+                    // var file = student.ImagePath; // Get the uploaded file from the student object
+                    var file = HttpContext.Request.Form.Files.FirstOrDefault();
+
                     if (file != null && file.Length > 0)
                     {
                         var fileName = Path.GetFileName(file.FileName);
@@ -189,7 +189,6 @@ namespace T1.Controllers
                     }
                     else
                     {
-                        // If no file is uploaded, set the image path to null or an appropriate default value in the database
                         command.Parameters.AddWithValue("@ImagePath", DBNull.Value);
                     }
 
