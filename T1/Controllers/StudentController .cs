@@ -123,8 +123,34 @@ namespace T1.Controllers
         }
 
 
+        //[HttpPost("insert")]
+        //public async Task<IActionResult> InsertStudent(Student student)
+        //{
+        //    string _connectionString = "Server=103.74.120.121;Database=students;User Id=tmp;Password=tmp@123;";
+
+        //    using (var connection = new SqlConnection(_connectionString))
+        //    {
+        //        await connection.OpenAsync();
+
+        //        var commandText = "INSERT INTO Student (Name, Age) VALUES (@Name, @Age);";
+
+        //        using (var command = new SqlCommand(commandText, connection))
+        //        {
+        //            command.Parameters.AddWithValue("@Name", student.Name);
+        //            command.Parameters.AddWithValue("@Age", student.Age);
+
+        //            await command.ExecuteNonQueryAsync();
+        //        }
+        //    }
+
+        //    return Ok();
+        //}
+
+
+
+
         [HttpPost("insert")]
-        public async Task<IActionResult> InsertStudent(Student student)
+        public async Task<IActionResult> InsertStudent([FromForm] Student student)
         {
             string _connectionString = "Server=103.74.120.121;Database=students;User Id=tmp;Password=tmp@123;";
 
@@ -132,19 +158,56 @@ namespace T1.Controllers
             {
                 await connection.OpenAsync();
 
-                var commandText = "INSERT INTO Student (Name, Age) VALUES (@Name, @Age);";
+                var commandText = "INSERT INTO Student (Name, Age, ImagePath) VALUES (@Name, @Age, @ImagePath); SELECT SCOPE_IDENTITY();";
 
                 using (var command = new SqlCommand(commandText, connection))
                 {
                     command.Parameters.AddWithValue("@Name", student.Name);
                     command.Parameters.AddWithValue("@Age", student.Age);
 
-                    await command.ExecuteNonQueryAsync();
+                    // Get the IFormFile from the request
+                    var file = student.ImagePath; // Get the uploaded file from the student object
+
+                    // Check if a file is uploaded
+                    if (file != null && file.Length > 0)
+                    {
+                        var fileName = Path.GetFileName(file.FileName);
+
+                        // Generate a unique file name
+                        var uniqueFileName = Guid.NewGuid().ToString() + "_" + fileName;
+
+                        // Set the file path where the image will be saved on the server
+                        var filePath = Path.Combine("uploads", uniqueFileName);
+
+                        // Save the file to the server
+                        using (var stream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await file.CopyToAsync(stream);
+                        }
+
+                        command.Parameters.AddWithValue("@ImagePath", filePath);
+                    }
+                    else
+                    {
+                        // If no file is uploaded, set the image path to null or an appropriate default value in the database
+                        command.Parameters.AddWithValue("@ImagePath", DBNull.Value);
+                    }
+
+                    // Execute the SQL command and get the inserted student ID
+                    int insertedStudentId = Convert.ToInt32(await command.ExecuteScalarAsync());
+
+                    // Set the ID, name, age, and image path in the student object
+                    student.StudentId= insertedStudentId;
+                   
                 }
             }
 
-            return Ok();
+            return Ok(student);
         }
+
+
+
+
 
 
 
@@ -171,6 +234,8 @@ namespace T1.Controllers
 
             return Ok();
         }
+
+
 
 
 
